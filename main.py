@@ -35,7 +35,7 @@ def generate_prompt_from_image(image_data, api_key):
         }]
 
         response = openai.Completion.create(
-            engine="text-davinci-003",
+            engine="gpt-3.5-turbo-0125",
             max_tokens=300,
             n=1,
             stop=None,
