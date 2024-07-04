@@ -35,7 +35,7 @@ def generate_prompt_from_image(image_data, api_key):
         }]
 
         response = openai.Completion.create(
-            engine="GPT-4",
+            engine="gpt-4-vision-preview",
             max_tokens=300,
             n=1,
             stop=None,
