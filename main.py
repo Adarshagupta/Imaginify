@@ -35,7 +35,7 @@ def generate_prompt_from_image(image_data, api_key):
         }]
 
         response = openai.Completion.create(
-            engine="davinci-codex",
+            engine="text-davinci-003",
             max_tokens=300,
             n=1,
             stop=None,
