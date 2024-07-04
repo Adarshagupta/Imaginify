@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Imaginify - Transform Images into Words. Upload an image and get an AI-generated prompt to inspire your creativity.">
+    <meta name="keywords" content="AI, Image Prompt, Creativity, Imaginify, Image to Text">
+    <meta property="og:title" content="Imaginify - Image Prompt Generator">
+    <meta property="og:description" content="Upload an image and get an AI-generated prompt to inspire your creativity.">
+    <meta property="og:image" content="/api/placeholder/1200/400">
+    <meta property="og:url" content="http://example.com">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Imaginify - Image Prompt Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --background-color: #f0f3f7;
+            --text-color: #2d3436;
+            --card-background: #ffffff;
+            --card-background-gradient: linear-gradient(145deg, #ffffff, #f0f3f7);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --button-hover-color: #5b4dce;
+            --hero-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe, #81ecec);
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 0;
+            text-align: center;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            transition: padding 0.3s ease;
+        }
+        header:hover {
+            padding: 1rem 0;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        .hero {
+            position: relative;
+            color: white;
+            text-align: center;
+            padding: 5rem 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            margin: 2rem;
+            overflow: hidden;
+            background: var(--hero-gradient);
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+        .hero p {
+            font-size: 1.5rem;
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        .section {
+            background: var(--card-background-gradient);
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+        h2, h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+        h2 {
+            font-size: 2rem;
+        }
+        h3 {
+            font-size: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        label {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        input[type="text"],
+        input[type="file"] {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--secondary-color);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        input[type="submit"] {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            align-self: center;
+            width: fit-content;
+        }
+        input[type="submit"]:hover {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
+        }
+        .flash-messages {
+            background-color: #ff7675;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+        .prompt, .previous-prompt {
+            background: var(--card-background-gradient);
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 3px 10px var(--shadow-color);
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+        .previous-prompts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .demo-images {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        .demo-image {
+            width: 200px;
+            height: 200px;
+            background-color: var(--secondary-color);
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px var(--shadow-color);
+            background-size: cover;
+            background-position: center;
+        }
+        .image-preview {
+            margin-top: 1rem;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px var(--shadow-color);
+            padding: 1rem;
+            background: white;
+        }
+        #image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 1rem;
+            border-radius: 10px;
+        }
+        .faq {
+            padding: 2rem 0;
+        }
+        .faq-item {
+            margin-bottom: 1rem;
+            padding: 1.2rem;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px var(--shadow-color);
+            background: var(--card-background);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+        .faq-item:hover {
+            transform: translateY(-5px);
+            background: var(--card-background-gradient);
+        }
+        .faq-question {
+            font-weight: 600;
+            color: var(--primary-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+        }
+        .faq-question::after {
+            content: '\u25BC';
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        .faq-question.active::after {
+            transform: rotateX(180deg);
+        }
+        .faq-answer {
+            display: none;
+            padding-top: 1rem;
+            color: var(--text-color);
+        }
+        .faq-question.active + .faq-answer {
+            display: block;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="logo">Imaginify</div>
+    </header>
+
+    <section class="hero">
+        <h1>Transform Images into Words</h1>
+        <p>Upload an image and get an AI-generated prompt to inspire your creativity</p>
+        <canvas class="hero-canvas"></canvas>
+    </section>
+
+    <main class="container">
+        <article class="section">
+            <h2>Generate Your Prompt</h2>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            <form method="post" enctype="multipart/form-data">
+                <label for="api_key">OpenAI API Key:</label>
+                <input type="text" name="api_key" id="api_key" required placeholder="Enter your OpenAI API key">
+                
+                <label for="image_url">Image URL (optional):</label>
+                <input type="text" name="image_url" id="image_url" placeholder="https://example.com/image.jpg">
+                
+                <label for="file">Or upload an image file:</label>
+                <input type="file" name="file" id="file" accept="image/*">
+                
+                <div id="image-preview-container" class="image-preview">
+                    <p>No image selected</p>
+                    <img id="image-preview" src="#" alt="Image Preview" style="display: none;"/>
+                </div>
+                
+                <input type="submit" value="Generate Prompt">
+            </form>
+        </article>
+        
+        {% if prompt %}
+            <article class="section">
+                <h3>Generated Prompt:</h3>
+                <div class="prompt">
+                    <p>{{ prompt }}</p>
+                </div>
+            </article>
+        {% endif %}
+        
+        {% if previous_prompts %}
+            <article class="section">
+                <h3>Previous Prompts</h3>
+                <div class="previous-prompts-container">
+                    {% for prev_prompt in previous_prompts %}
+                        <div class="previous-prompt">
+                            <p>{{ prev_prompt }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </article>
+        {% endif %}
+
+        <article class="section">
+            <h2>How It Works</h2>
+            <p>Imaginify uses advanced AI to analyze your images and generate creative prompts. Here are some examples:</p>
+            <div class="demo-images">
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image1.jpg');"></div>
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image2.jpg');"></div>
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image3.jpg');"></div>
+            </div>
+        </article>
+
+        <article class="section">
+            <h2>Sample Prompts</h2>
+            <ul>
+                <li>A serene mountain landscape with a crystal-clear river flowing through the valley.</li>
+                <li>A bustling city street at night with glowing neon signs and heavy rainfall.</li>
+                <li>A futuristic city with flying cars and towering skyscrapers under a twilight sky.</li>
+                <li>An enchanted forest with glowing flora and mystical creatures.</li>
+            </ul>
+        </article>
+
+        <article class="section faq">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-item">
+                <h3 class="faq-question">What is Imaginify?</h3>
+                <div class="faq-answer">
+                    <p>Imaginify is an AI-powered tool that generates creative prompts based on the images you upload.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-question">How do I use Imaginify?</h3>
+                <div class="faq-answer">
+                    <p>You can either enter an image URL or upload an image file, then enter your OpenAI API key, and click "Generate Prompt" to get a creative prompt.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-question">Do I need an OpenAI API key to use Imaginify?</h3>
+                <div class="faq-answer">
+                    <p>Yes, to generate prompts you need to have a valid OpenAI API key.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <h3 class="faq-question">Is there a limit to the number of prompts I can generate?</h3>
+                <div class="faq-answer">
+                    <p>The limit depends on your OpenAI API key usage limits. Imaginify itself does not impose any limits.</p>
+                </div>
+            </div>
+        </article>
+    </main>
+
+    <script>
+        document.getElementById('file').addEventListener('change', function(event) {
+            var imagePreviewContainer = document.getElementById('image-preview-container');
+            var imagePreview = document.getElementById('image-preview');
+            var file = event.target.files[0];
+            
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreviewContainer.querySelector('p').style.display = 'none';
+                    imagePreview.style.display = 'block';
+                    imagePreview.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+                imagePreview.src = '#';
+                imagePreviewContainer.querySelector('p').style.display = 'block';
+            }
+        });
+
+        document.querySelectorAll('.faq-question').forEach(item => {
+            item.addEventListener('click', event => {
+                const question = event.target;
+                const answer = question.nextElementSibling;
+                const allAnswers = document.querySelectorAll('.faq-answer');
+                const allQuestions = document.querySelectorAll('.faq-question');
+
+                if (answer.style.display === 'block') {
+                    answer.style.display = 'none';
+                    question.classList.remove('active');
+                } else {
+                    allAnswers.forEach(ans => ans.style.display = 'none');
+                    allQuestions.forEach(q => q.classList.remove('active'));
+                    
+                    answer.style.display = 'block';
+                    question.classList.add('active');
+                }
+            });
+        });
+
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.querySelector('.hero-canvas'),
+            alpha: true,
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const material = new THREE.MeshBasicMaterial({
+            color: 0x6c5ce7,
+            wireframe: true,
+        });
+        const sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            sphere.rotation.x += 0.01;
+            sphere.rotation.y += 0.01;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>
