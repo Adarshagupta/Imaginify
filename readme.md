@@ -23,4 +23,5 @@ Imaginify is a web application that transforms images into creative writing prom
    
 3. **Run:**
    ```python main.py```
-   
+
+(`img1.png`, `img2.png`, `img3.png`) in a directory named `images` within your project directory. Similarly, place `video.mp4` in a directory named `videos`. Adjust the paths (`/images/img1.png`, `/videos/video.mp4`) according to where you actually place these files in your project structure.
