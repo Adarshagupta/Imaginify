@@ -37,7 +37,9 @@ def generate_prompt_from_image(image_data, api_key):
             "Generate a creative writing prompt based on this image. The prompt should be imaginative and open-ended, encouraging storytelling or poetry."
         }, {
             "type": "image_url",
-            "image_url": image_data
+            "image_url": {
+                "url": image_data
+            }
         }]
     }]
 

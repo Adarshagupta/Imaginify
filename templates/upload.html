@@ -1,320 +1,762 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Imaginify - Transform Images into Words. Upload an image and get an AI-generated prompt to inspire your creativity.">
+    <meta name="description"
+        content="Imaginify - Transform Images into Words. Upload an image and get an AI-generated prompt to inspire your creativity.">
     <meta name="keywords" content="AI, Image Prompt, Creativity, Imaginify, Image to Text">
     <meta property="og:title" content="Imaginify - Image Prompt Generator">
-    <meta property="og:description" content="Upload an image and get an AI-generated prompt to inspire your creativity.">
+    <meta property="og:description"
+        content="Upload an image and get an AI-generated prompt to inspire your creativity.">
     <meta property="og:image" content="/api/placeholder/1200/400">
     <meta property="og:url" content="http://example.com">
     <meta name="twitter:card" content="summary_large_image">
     <title>Imaginify - Image Prompt Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.11.5/dist/gsap.min.js"></script>
     <style>
         :root {
-            --primary-color: #6c5ce7;
-            --secondary-color: #a29bfe;
-            --background-color: #f0f3f7;
-            --text-color: #2d3436;
-            --card-background: #ffffff;
-            --card-background-gradient: linear-gradient(145deg, #ffffff, #f0f3f7);
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --button-hover-color: #5b4dce;
-            --hero-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe, #81ecec);
+            --background-color: #0f0e17;
+            --text-color: #fffffe;
+            --primary-color: #ff8906;
+            --secondary-color: #f25f4c;
+            --tertiary-color: #e53170;
+            --card-background: #2e2f3e;
+            --button-gradient: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            --mobile-padding: 1rem;
         }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .preloader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--primary-color);
+            border-top: 5px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Hide content initially */
+        body>*:not(.preloader) {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        body.loaded>*:not(.preloader) {
+            opacity: 1;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             line-height: 1.6;
             color: var(--text-color);
             background-color: var(--background-color);
-            margin: 0;
-            padding: 0;
+            overflow-x: hidden;
+            font-size: 16px;
         }
-        header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 0.5rem 0;
-            text-align: center;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            transition: padding 0.3s ease;
-        }
-        header:hover {
-            padding: 1rem 0;
-        }
-        .logo {
-            font-size: 2rem;
-            font-weight: 600;
-        }
-        .hero {
-            position: relative;
-            color: white;
-            text-align: center;
-            padding: 5rem 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            margin: 2rem;
-            overflow: hidden;
-            background: var(--hero-gradient);
-        }
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            position: relative;
-            z-index: 2;
-        }
-        .hero p {
-            font-size: 1.5rem;
-            max-width: 600px;
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
             margin: 0 auto;
-            position: relative;
-            z-index: 2;
+            padding: var(--mobile-padding);
         }
+
+        header {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(46, 47, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 10px 20px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            max-width: 600px;
+            border: 5px white solid;
+
+        }
+
+        header:hover {
+            box-shadow: 0 0 20px rgba(255, 137, 6, 0.5);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        nav a:hover {
+            background-color: var(--primary-color);
+            color: var(--background-color);
+        }
+
+        .hero {
+            height: 130vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            text-decoration: solid;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            background: var(--button-gradient);
+            -webkit-background-clip: text;
+            color: white;
+
+        }
+
+        .hero p {
+            font-size: 1rem;
+            max-width: 90%;
+            margin: 0 auto 2rem;
+            opacity: 0.8;
+        }
+
         .hero-canvas {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: -1;
         }
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 2rem;
-        }
+
         .section {
-            background: var(--card-background-gradient);
-            padding: 2.5rem;
-            margin-bottom: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px var(--shadow-color);
+            background: var(--card-background);
+            padding: 2rem var(--mobile-padding);
+            margin-bottom: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
-        h2, h3 {
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(255, 137, 6, 0.2);
+        }
+
+        h2,
+        h3 {
             color: var(--primary-color);
             margin-top: 0;
+            margin-bottom: 1.5rem;
         }
+
         h2 {
             font-size: 2rem;
+            font-weight: 600;
         }
+
         h3 {
             font-size: 1.5rem;
+            font-weight: 500;
         }
+
         form {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
+
         label {
-            font-weight: 600;
-            color: var(--primary-color);
-            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text-color);
+            font-size: 1rem;
         }
+
         input[type="text"],
         input[type="file"] {
             width: 100%;
-            padding: 1rem;
-            border: 1px solid var(--secondary-color);
+            padding: 0.8rem;
+            border: 2px solid var(--primary-color);
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.9rem;
+            background-color: var(--card-background);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
+
+        input[type="text"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(255, 137, 6, 0.5);
+        }
+
         input[type="submit"] {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem;
+            background: var(--button-gradient);
+            color: var(--text-color);
+            padding: 0.8rem 2rem;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 5px 15px var(--shadow-color);
-            align-self: center;
-            width: fit-content;
+            transition: all 0.3s ease;
+            align-self: flex-start;
         }
+
         input[type="submit"]:hover {
-            background-color: var(--button-hover-color);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 137, 6, 0.3);
         }
+
         .flash-messages {
-            background-color: #ff7675;
-            color: white;
+            background-color: var(--tertiary-color);
+            color: var(--text-color);
             padding: 1rem;
             border-radius: 10px;
             margin-bottom: 1.5rem;
-            box-shadow: 0 5px 15px var(--shadow-color);
         }
-        .prompt, .previous-prompt {
-            background: var(--card-background-gradient);
+
+        .prompt,
+        .previous-prompt {
+            background: var(--card-background);
             padding: 1.5rem;
             margin-top: 1.5rem;
-            box-shadow: 0 3px 10px var(--shadow-color);
             border-radius: 10px;
-            font-size: 1.2rem;
+            font-size: 1rem;
+            border: 2px solid var(--primary-color);
         }
-        .previous-prompts-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
+
         .demo-images {
             display: flex;
             justify-content: space-around;
             flex-wrap: wrap;
             margin-top: 2rem;
         }
+
         .demo-image {
-            width: 200px;
-            height: 200px;
-            background-color: var(--secondary-color);
-            margin-bottom: 1rem;
+            width: 150px;
+            height: 150px;
+            background-color: var(--card-background);
+            margin-bottom: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 5px 15px var(--shadow-color);
             background-size: cover;
             background-position: center;
+            transition: all 0.3s ease;
         }
+
+        .demo-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(255, 137, 6, 0.3);
+        }
+
         .image-preview {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             text-align: center;
             border-radius: 10px;
-            box-shadow: 0 3px 10px var(--shadow-color);
-            padding: 1rem;
-            background: white;
+            padding: 1.5rem;
+            background: var(--card-background);
+            border: 2px dashed var(--primary-color);
         }
+
         #image-preview {
             max-width: 100%;
             max-height: 300px;
             margin-top: 1rem;
             border-radius: 10px;
         }
-        .faq {
-            padding: 2rem 0;
-        }
+
         .faq-item {
-            margin-bottom: 1rem;
-            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 3px 10px var(--shadow-color);
             background: var(--card-background);
-            transition: transform 0.3s ease, background 0.3s ease;
+            border: 2px solid var(--primary-color);
+            transition: all 0.3s ease;
         }
+
         .faq-item:hover {
-            transform: translateY(-5px);
-            background: var(--card-background-gradient);
+            transform: translateX(10px);
+            box-shadow: -5px 5px 15px rgba(255, 137, 6, 0.2);
         }
+
         .faq-question {
-            font-weight: 600;
+            font-weight: 500;
             color: var(--primary-color);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
         }
-        .faq-question::after {
-            content: '\u25BC';
-            font-size: 1.2rem;
-            transition: transform 0.3s ease;
-        }
-        .faq-question.active::after {
-            transform: rotateX(180deg);
-        }
+
         .faq-answer {
-            display: none;
             padding-top: 1rem;
             color: var(--text-color);
+            opacity: 0.8;
+            display: none;
         }
-        .faq-question.active + .faq-answer {
-            display: block;
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+
+        @media screen and (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                top: 10px;
+                width: 95%;
+                padding: 10px;
+            }
+
+            nav {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero p {
+                font-size: 0.9rem;
+            }
+
+            .section {
+                padding: 1.5rem var(--mobile-padding);
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            h3 {
+                font-size: 1.3rem;
+            }
+
+            .demo-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+
+            .hero p {
+                font-size: 0.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            h3 {
+                font-size: 1.2rem;
+            }
+
+            .demo-image {
+                width: 100px;
+                height: 100px;
+            }
+
+            input[type="submit"] {
+                width: 100%;
+            }
+        }
+
+        .popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .popup.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .popup-content {
+            background-color: var(--card-background);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 0 20px rgba(255, 137, 6, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .popup.show .popup-content {
+            transform: scale(1);
+        }
+
+        .popup h2 {
+            margin-bottom: 1rem;
+        }
+
+        .popup p {
+            margin-bottom: 1rem;
+        }
+
+        .popup button {
+            background: var(--button-gradient);
+            color: var(--text-color);
+            border: none;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .popup button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 137, 6, 0.4);
+        }
+
+        .hero {
+            position: relative;
+            overflow: visible;
+            padding-bottom: 10px;
+        }
+
+        .sample-cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 40px;
+            perspective: 1000px;
+        }
+
+        .card {
+            background: rgba(46, 47, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 200px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            transform: rotateX(10deg);
+        }
+
+        .card:hover {
+            transform: rotateX(0deg) translateY(-10px);
+            box-shadow: 0 15px 40px rgba(255, 137, 6, 0.2);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        @media screen and (max-width: 768px) {
+            .sample-cards {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .card {
+                width: 80%;
+                max-width: 300px;
+            }
+        }
+
+        .scroll-to-prompt {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--button-gradient);
+            color: var(--text-color);
+            border: none;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 1002;
+            /* Ensure it is above other content */
+        }
+
+        .scroll-to-prompt:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 137, 6, 0.4);
+        }
+
+        footer {
+            background-color: rgba(46, 47, 62, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 20px;
+            margin: 40px auto;
+            width: 90%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 5px white solid;
+        }
+
+        footer p {
+            margin: 10px 0;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .social-links a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 24px;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        @media screen and (max-width: 768px) {
+            footer {
+                width: 95%;
+                padding: 15px;
+            }
         }
     </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
+
 <body>
+    <div class="preloader">
+        <div class="loader"></div>
+    </div>
+    <!-- Existing content -->
+
+    <!-- Scroll button initially hidden -->
+    <button id="scroll-to-prompt" class="scroll-to-prompt" style="display:none;">Go to Prompt</button>
+
+    <!-- Existing content continues -->
+    <div id="welcome-popup" class="popup">
+        <div class="popup-content">
+            <h2>Welcome to Imaginify!</h2>
+            <p>Transform your images into creative writing prompts using the power of AI.</p>
+            <p>Upload an image or provide a URL to get started.</p>
+            <button id="close-popup">Get Started</button>
+            <button id="scroll-to-prompt" class="scroll-to-prompt" style="display:none;">Go to Prompt</button>
+
+        </div>
+    </div>
     <header>
-        <div class="logo">Imaginify</div>
+        <a href="#" class="logo">Imaginify</a>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#how-it-works">How It Works</a>
+            <a href="#faq">FAQ</a>
+
+        </nav>
     </header>
 
-    <section class="hero">
+    <section id="home" class="hero">
         <h1>Transform Images into Words</h1>
         <p>Upload an image and get an AI-generated prompt to inspire your creativity</p>
+        <div class="sample-cards">
+            <div class="card">
+                <div class="card-icon">🖼️</div>
+                <h3>Visual Inspiration</h3>
+                <p>Turn any image into a creative writing prompt</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🤖</div>
+                <h3>AI-Powered</h3>
+                <p>Leverage advanced AI for unique ideas</p>
+            </div>
+            <div class="card">
+                <div class="card-icon">✍️</div>
+                <h3>Writer's Block Buster</h3>
+                <p>Overcome creative hurdles with ease</p>
+            </div>
+        </div>
         <canvas class="hero-canvas"></canvas>
     </section>
 
     <main class="container">
-        <article class="section">
+        <article class="section fade-in">
             <h2>Generate Your Prompt</h2>
-            
+
             {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="flash-messages">
-                        <ul>
-                        {% for message in messages %}
-                            <li>{{ message }}</li>
-                        {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
+            {% if messages %}
+            <div class="flash-messages">
+                <ul>
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
             {% endwith %}
-            
+
             <form method="post" enctype="multipart/form-data">
                 <label for="api_key">OpenAI API Key:</label>
                 <input type="text" name="api_key" id="api_key" required placeholder="Enter your OpenAI API key">
-                
+
                 <label for="image_url">Image URL (optional):</label>
                 <input type="text" name="image_url" id="image_url" placeholder="https://example.com/image.jpg">
-                
+
                 <label for="file">Or upload an image file:</label>
                 <input type="file" name="file" id="file" accept="image/*">
-                
+
                 <div id="image-preview-container" class="image-preview">
                     <p>No image selected</p>
-                    <img id="image-preview" src="#" alt="Image Preview" style="display: none;"/>
+                    <img id="image-preview" src="#" alt="Image Preview" style="display: none;" />
                 </div>
-                
+
                 <input type="submit" value="Generate Prompt">
             </form>
         </article>
-        
+
         {% if prompt %}
-            <article class="section">
-                <h3>Generated Prompt:</h3>
-                <div class="prompt">
-                    <p>{{ prompt }}</p>
-                </div>
-            </article>
-        {% endif %}
-        
-        {% if previous_prompts %}
-            <article class="section">
-                <h3>Previous Prompts</h3>
-                <div class="previous-prompts-container">
-                    {% for prev_prompt in previous_prompts %}
-                        <div class="previous-prompt">
-                            <p>{{ prev_prompt }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
-            </article>
+        <article class="section fade-in">
+            <h3>Generated Prompt:</h3>
+            <div class="prompt">
+                <p>{{ prompt }}</p>
+            </div>
+        </article>
         {% endif %}
 
-        <article class="section">
+        {% if previous_prompts %}
+        <article class="section fade-in">
+            <h3>Previous Prompts</h3>
+            <div class="previous-prompts-container">
+                {% for prev_prompt in previous_prompts %}
+                <div class="previous-prompt">
+                    <p>{{ prev_prompt }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </article>
+        {% endif %}
+
+        <article id="how-it-works" class="section fade-in">
             <h2>How It Works</h2>
-            <p>Imaginify uses advanced AI to analyze your images and generate creative prompts. Here are some examples:</p>
+            <p>Imaginify uses advanced AI to analyze your images and generate creative prompts. Here are some examples:
+            </p>
             <div class="demo-images">
-                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image1.jpg');"></div>
-                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image2.jpg');"></div>
-                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image3.jpg');"></div>
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image1.jpg');">
+                </div>
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image2.jpg');">
+                </div>
+                <div class="demo-image" aria-hidden="true" style="background-image: url('/path/to/demo-image3.jpg');">
+                </div>
             </div>
         </article>
 
-        <article class="section">
+        <article class="section fade-in">
             <h2>Sample Prompts</h2>
             <ul>
                 <li>A serene mountain landscape with a crystal-clear river flowing through the valley.</li>
@@ -324,18 +766,20 @@
             </ul>
         </article>
 
-        <article class="section faq">
+        <article id="faq" class="section fade-in">
             <h2>Frequently Asked Questions</h2>
             <div class="faq-item">
                 <h3 class="faq-question">What is Imaginify?</h3>
                 <div class="faq-answer">
-                    <p>Imaginify is an AI-powered tool that generates creative prompts based on the images you upload.</p>
+                    <p>Imaginify is an AI-powered tool that generates creative prompts based on the images you upload.
+                    </p>
                 </div>
             </div>
             <div class="faq-item">
                 <h3 class="faq-question">How do I use Imaginify?</h3>
                 <div class="faq-answer">
-                    <p>You can either enter an image URL or upload an image file, then enter your OpenAI API key, and click "Generate Prompt" to get a creative prompt.</p>
+                    <p>You can either enter an image URL or upload an image file, then enter your OpenAI API key, and
+                        click "Generate Prompt" to get a creative prompt.</p>
                 </div>
             </div>
             <div class="faq-item">
@@ -347,21 +791,46 @@
             <div class="faq-item">
                 <h3 class="faq-question">Is there a limit to the number of prompts I can generate?</h3>
                 <div class="faq-answer">
-                    <p>The limit depends on your OpenAI API key usage limits. Imaginify itself does not impose any limits.</p>
+                    <p>The limit depends on your OpenAI API key usage limits. Imaginify itself does not impose any
+                        limits.</p>
                 </div>
             </div>
         </article>
     </main>
-
+    <footer>
+        <p>&copy; 2024 Imaginify. All rights reserved.</p>
+        <div class="social-links">
+            <a href="https://github.com/your-github-profile" target="_blank" rel="noopener noreferrer"
+                aria-label="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://twitter.com/your-twitter-profile" target="_blank" rel="noopener noreferrer"
+                aria-label="Twitter">
+                <i class="fab fa-twitter"></i>
+            </a>
+        </div>
+    </footer>
     <script>
-        document.getElementById('file').addEventListener('change', function(event) {
+        // Preloader functionality
+        window.addEventListener('load', function () {
+            const preloader = document.querySelector('.preloader');
+            const body = document.body;
+
+            setTimeout(function () {
+                preloader.classList.add('fade-out');
+                body.classList.add('loaded');
+            }, 1000); // Adjust the timeout as needed
+        });
+
+        // Image preview functionality
+        document.getElementById('file').addEventListener('change', function (event) {
             var imagePreviewContainer = document.getElementById('image-preview-container');
             var imagePreview = document.getElementById('image-preview');
             var file = event.target.files[0];
-            
+
             if (file) {
                 var reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     imagePreviewContainer.querySelector('p').style.display = 'none';
                     imagePreview.style.display = 'block';
                     imagePreview.src = e.target.result;
@@ -374,9 +843,10 @@
             }
         });
 
+        // FAQ functionality
         document.querySelectorAll('.faq-question').forEach(item => {
             item.addEventListener('click', event => {
-                const question = event.target;
+                const question = event.currentTarget;
                 const answer = question.nextElementSibling;
                 const allAnswers = document.querySelectorAll('.faq-answer');
                 const allQuestions = document.querySelectorAll('.faq-question');
@@ -387,7 +857,7 @@
                 } else {
                     allAnswers.forEach(ans => ans.style.display = 'none');
                     allQuestions.forEach(q => q.classList.remove('active'));
-                    
+
                     answer.style.display = 'block';
                     question.classList.add('active');
                 }
@@ -403,20 +873,20 @@
         });
         renderer.setSize(window.innerWidth, window.innerHeight);
 
-        const geometry = new THREE.SphereGeometry(1, 32, 32);
+        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
         const material = new THREE.MeshBasicMaterial({
-            color: 0x6c5ce7,
+            color: 0xff8906,
             wireframe: true,
         });
-        const sphere = new THREE.Mesh(geometry, material);
-        scene.add(sphere);
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
 
-        camera.position.z = 5;
+        camera.position.z = 30;
 
         function animate() {
             requestAnimationFrame(animate);
-            sphere.rotation.x += 0.01;
-            sphere.rotation.y += 0.01;
+            torusKnot.rotation.x += 0.01;
+            torusKnot.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
         animate();
@@ -426,6 +896,58 @@
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
         });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('nav a').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+
+        // Popup functionality
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const popup = document.getElementById('welcome-popup');
+            const closeButton = document.getElementById('close-popup');
+
+            // Show popup when page loads
+            setTimeout(() => {
+                popup.classList.add('show');
+            }, 2000); // Delayed to show after preloader
+
+            // Close popup when button is clicked
+            closeButton.addEventListener('click', () => {
+                popup.classList.remove('show');
+            });
+
+            // Close popup when clicking outside
+            popup.addEventListener('click', (e) => {
+                if (e.target === popup) {
+                    popup.classList.remove('show');
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function () {
+            const scrollToPromptBtn = document.getElementById('scroll-to-prompt');
+            const promptSection = document.querySelector('.prompt'); // Assuming this class is used for the prompt section
+
+            // Check if there's a generated prompt and show the button if it exists
+            if (promptSection) {
+                scrollToPromptBtn.style.display = 'block';
+            }
+
+            // Add click event to scroll to the prompt section
+            scrollToPromptBtn.addEventListener('click', () => {
+                promptSection.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
     </script>
 </body>
-</html>
+
+</html>s
